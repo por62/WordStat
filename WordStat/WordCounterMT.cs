@@ -13,13 +13,15 @@ namespace WordStat
 	{
 		private ConcurrentQueue<string> _WordBuffer = new ConcurrentQueue<string>();
 		private ConcurrentDictionary<string, int> _WordStatTotal = new ConcurrentDictionary<string, int>();
-
 		private object _BufferSyncRoot = new object();
 		private RWLocker _Lock = new RWLocker();
-		
 		private int _WorkersCount;
-
 		private bool _StopWorkers;
+
+		public WordCounterMT(int workersCount)
+		{
+			_WorkersCount = workersCount;
+		}
 
 		protected override IDictionary<string, int> Process(IEnumerable<string> words)
 		{
@@ -40,11 +42,6 @@ namespace WordStat
 			Task.WaitAll(tasks.ToArray());
 
 			return _WordStatTotal;
-		}
-
-		public WordCounterMT(int workersCount)
-		{
-			_WorkersCount = workersCount;
 		}
 
 		private void ReadWordsAndFillQueue(IEnumerable<string> words)
@@ -94,16 +91,16 @@ namespace WordStat
 				//Trace.WriteLine(string.Format("TH: {0}; {1}", Thread.CurrentThread.Name, word));
 
 				_WordStatTotal.AddOrUpdate(
-					word, 
-					1, 
-					(k, s) => s+1);
+					word,
+					1,
+					(k, s) => s + 1);
 			}
 		}
 	}
 
 	public static class DictUtils
 	{
-		public static void AddOrUpdate<K, V>(this Dictionary<K, V> dict, K key, V val, Func<K,V,V> update)
+		public static void AddOrUpdate<K, V>(this Dictionary<K, V> dict, K key, V val, Func<K, V, V> update)
 		{
 			if (dict.ContainsKey(key))
 			{

@@ -17,6 +17,7 @@ namespace WordStat
 
 		private static CancellationTokenSource _CancellationTokenSource = new CancellationTokenSource();
 		private static Task _ProgressTask;
+		
 		static void Main(string[] args)
 		{
 			//var folderName = @"D:\Temp\MyghtyCall";
@@ -163,7 +164,6 @@ filepath - path to the text file
 
 			return settings;
 		}
-
 		private static void WriteSettingsRow(string name, object value)
 		{
 			ConsoleColorUtils.Write(ConsoleColor.Gray, name.PadRight(_Padding));

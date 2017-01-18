@@ -15,7 +15,11 @@ namespace WordStat
 		private double _Progress;
 		private IWordBreaker _WordBreaker;
 		
-		protected StreamReader _StreamReader; 
+		protected StreamReader _StreamReader;
+
+		public Stream Stream { get; set; }
+		public Encoding StreamEncoding { get; set; }
+
 		protected IEnumerable<string> GetWords()
 		{
 			while (!_StreamReader.EndOfStream)
@@ -37,8 +41,6 @@ namespace WordStat
 			get { return _Lock.Get(() => _Progress); }
 			private set { _Lock.Change(() => _Progress = value); }
 		}
-		public Stream Stream { get; set; }
-		public Encoding StreamEncoding { get; set; }
 		public IDictionary<string, int> Count(IWordBreaker wb)
 		{
 			_WordBreaker = wb;
@@ -46,7 +48,6 @@ namespace WordStat
 
 			return Process(GetWords());
 		}
-
 		public void Dispose()
 		{
 			if(_StreamReader != null) _StreamReader.Dispose();

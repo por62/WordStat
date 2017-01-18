@@ -12,6 +12,7 @@ namespace WordStat
 	{
 		private Regex _Regex;
 		private int _MinWordLength;
+
 		public int MinWordLength
 		{
 			get { return _MinWordLength; }

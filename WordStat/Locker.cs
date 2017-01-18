@@ -40,7 +40,7 @@ namespace WordStat
 	{
 		public T Get<T>(Func<T> get)
 		{
-			lock(this) return get();
+			lock (this) return get();
 		}
 		public void Change(Action change)
 		{
@@ -49,24 +49,6 @@ namespace WordStat
 				if (change != null) change();
 
 				Monitor.PulseAll(this);
-			}
-		}
-		public void Wait(Func<bool> condition)
-		{
-			lock (this)
-			{
-				while (condition())
-					Monitor.Wait(this);
-			}
-		}
-		public T WaitAndGet<T>(Func<bool> condition, Func<T> getter)
-		{
-			lock (this)
-			{
-				while (condition())
-					Monitor.Wait(this);
-
-				return getter();
 			}
 		}
 	}

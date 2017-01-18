@@ -12,6 +12,9 @@ namespace WordStat
 {
 	public class WordCounterMTm : WordCounterBase
 	{
+		[ThreadStatic]
+		private static int _TotalWords;
+
 		private Locker _InputLock = new Locker();
 		private Locker _OutputLock = new Locker();
 
@@ -19,6 +22,18 @@ namespace WordStat
 
 		private int _BlockSize;
 		private int _WorkersCount;
+		
+		public WordCounterMTm(int threadsCount, int blockSize)
+		{
+			_WorkersCount = threadsCount;
+			_BlockSize = blockSize;
+
+			int workerThread;
+			int completionThread;
+			System.Threading.ThreadPool.GetMinThreads(out workerThread, out completionThread);
+			System.Threading.ThreadPool.SetMinThreads(Math.Max(_WorkersCount, workerThread), completionThread);
+		}
+
 		protected override IDictionary<string, int> Process(IEnumerable<string> words)
 		{
 			List<Task> tasks = new List<Task>();
@@ -31,19 +46,8 @@ namespace WordStat
 			}
 
 			Task.WaitAll(tasks.ToArray());
-			
+
 			return _Result;
-		}
-
-		public WordCounterMTm(int threadsCount, int blockSize)
-		{
-			_WorkersCount = threadsCount;
-			_BlockSize = blockSize;
-
-			int workerThread;
-			int completionThread;
-			System.Threading.ThreadPool.GetMinThreads(out workerThread, out completionThread);
-			System.Threading.ThreadPool.SetMinThreads(Math.Max(_WorkersCount, workerThread), completionThread);
 		}
 
 		private void WriteToResult(Dictionary<string, int> dict)
@@ -62,10 +66,6 @@ namespace WordStat
 						(k, v) => v + val));
 			}
 		}
-
-		[ThreadStatic]
-		static int _TotalWords;
-
 		private void CreateWordStat(IEnumerator<string> input)
 		{
 			//Thread.CurrentThread.Name = Guid.NewGuid().ToString().Substring(0,4);
