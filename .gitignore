@@ -2,3 +2,7 @@
 *.user
 bin/
 obj/
+.vs
+*.psess
+*.vsp
+project.lock.json

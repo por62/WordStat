@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Linq;
 using System.Text;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using WordStat.Core;
 using System.IO;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace WordStat.Tests
 {
 	[TestClass()]
-	public class Tests
+	public class Core_Tests
 	{
 		public static string _Text = 
 @"His mum had told him the story of Br'er Rabbit and the Tar-Baby when he was little. He had been terrified, picturing the glistening man made of tar that Br'er Rabbit had fought, the animal becoming more and more glued to his opponent with every blow. It had given him nightmares for weeks, dreams of a hot, black embrace and steaming mouths lowering down onto his…
@@ -22,7 +23,7 @@ It took him longer than he might have liked to die.
 Олег стряхнул оцепенение и увидел всё тот же экран, с которого всё так же приветливо улыбалась его любимая актриса. ""Фильмы надо меньше смотреть"", - подумал Олег и нервно нащупав ""Power"" вдавил кнопку до отказа... ";
 
 		[TestMethod()]
-		public void LangDetector()
+		public void Core_LangDetector()
 		{
 			var textRus = "проект";
 			var textEn = "project";
@@ -35,7 +36,7 @@ It took him longer than he might have liked to die.
 		}
 
 		[TestMethod()]
-		public void WordBreakers()
+		public void Core_WordBreakers()
 		{
 			IWordBreaker wb1 = new WordBreakerRegEx();
 			IWordBreaker wb2 = new WordBreakerByDelimiters();
@@ -54,7 +55,7 @@ It took him longer than he might have liked to die.
 		}
 
 		[TestMethod()]
-		public void WordCounters()
+		public void Core_WordCounters()
 		{
 			IWordBreaker wbr = new WordBreakerRegEx(); 
 			wbr.MinWordLength = 3;
