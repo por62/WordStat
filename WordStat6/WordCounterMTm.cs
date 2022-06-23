@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
-namespace WordStat.Core
+namespace WordStat6
 {
 	public class WordCounterMTm : WordCounterBase
 	{
@@ -17,8 +18,8 @@ namespace WordStat.Core
 
 		private int _BlockSize;
 		private int _WorkersCount;
-		
-		public WordCounterMTm(int threadsCount, int blockSize)
+
+		public WordCounterMTm(IWordBreaker wb, Stream s, Encoding enc, int threadsCount, int blockSize) : base(wb, s, enc)
 		{
 			_WorkersCount = threadsCount;
 			_BlockSize = blockSize;
@@ -63,7 +64,7 @@ namespace WordStat.Core
 
 			while (true)
 			{
-				string[] words = _InputLock.Get(() => 
+				string[]? words = _InputLock.Get(() => 
 				{
 					var items = new string[_BlockSize];
 					int i;

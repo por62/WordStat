@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 
-namespace WordStat.Core
+namespace WordStat6
 {
 	public class LangDetector : ILanguageDetector
 	{
@@ -19,14 +19,12 @@ namespace WordStat.Core
 				.Take(3)
 				.SelectMany(c => _CharRanges
 					.Where(r => r.Start <= c && c <= r.End)
-					.Select(r => (Lang?) r.Language)
-					.Where(l => l != null)
-					.Select(l => l.Value))
+					.Select(r => r.Language))
 				.GroupBy(l => l)
 				.OrderByDescending(g => g.Count())
 				.FirstOrDefault();
 
-			return langGroup == null ? (Lang?)null : langGroup.Key;
+			return langGroup?.Key;
 		}
 	}
 }

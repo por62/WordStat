@@ -69,15 +69,15 @@ filepath - path to the text file
 							settings.BlockSize == 0 ? (IWordCounter)new WordCounterMT(settings.ThreadCount) :
 							new WordCounterMTm(settings.ThreadCount, settings.BlockSize);
 
-						_ProgressTask = Task.Factory.StartNew(() => ShowProgress(wc), _CancellationTokenSource.Token);
+						//_ProgressTask = Task.Factory.StartNew(() => ShowProgress(wc), _CancellationTokenSource.Token);
 
 						wc.Stream = fs;
 						wc.StreamEncoding = Encoding.UTF8;
 
 						statistics = wc.Count(wb);
 
-						_CancellationTokenSource.Cancel();
-						_ProgressTask.Wait();
+						//_CancellationTokenSource.Cancel();
+						//_ProgressTask.Wait();
 
 
 						var orderedStat = statistics

@@ -1,23 +1,19 @@
 ﻿using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-namespace WordStat.Core
+namespace WordStat6
 {
 	public class WordBreakerRegEx : IWordBreaker
 	{
 		private Regex _Regex;
 		private int _MinWordLength;
 
-		public int MinWordLength
+		public WordBreakerRegEx(int minWordLength)
 		{
-			get { return _MinWordLength; }
-			set
-			{
-				_MinWordLength = value;
+			_MinWordLength = minWordLength;
 
-				var pattern = string.Format("\\w{{{0},}}", _MinWordLength);
-				_Regex = new Regex(pattern, RegexOptions.IgnoreCase);
-			}
+			var pattern = string.Format("\\w{{{0},}}", _MinWordLength);
+			_Regex = new Regex(pattern, RegexOptions.IgnoreCase);
 		}
 		public IEnumerable<string> GetWords(string phrase)
 		{

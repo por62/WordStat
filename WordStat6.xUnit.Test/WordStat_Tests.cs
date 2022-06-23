@@ -1,16 +1,10 @@
-﻿using System;
-using System.Linq;
-using System.Text;
-using WordStat.Core;
-using System.IO;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System.Text;
 
-namespace WordStat.Tests
+namespace WordStat6.xUnit.Test
 {
-	[TestClass()]
-	public class Core_Tests
+	public class WordStat_Tests
 	{
-		public static string _Text = 
+		public static string _Text =
 @"His mum had told him the story of Br'er Rabbit and the Tar-Baby when he was little. He had been terrified, picturing the glistening man made of tar that Br'er Rabbit had fought, the animal becoming more and more glued to his opponent with every blow. It had given him nightmares for weeks, dreams of a hot, black embrace and steaming mouths lowering down onto his…
 He shouted for help, tipping his head back and bellowing even as the tarmac gave up all pretence of solidity and sucked him straight down. The shout was cut off in his throat as the ground suddenly hardened again, his teeth slamming onto solid pavement in splinters of enamel. He couldn't cry out at the pain, the earth and rubble in his throat choked all hope of that. Nothing could get past it, most certainly not air.
 It took him longer than he might have liked to die.
@@ -22,83 +16,88 @@ It took him longer than he might have liked to die.
 Губы, ставшие ярко-алыми, представляя яркий контраст с бледной кожей, раскрылись и прошептали одно слово ""Опасайся..."", после чего экран перерезала трещина, кожа зашелушилась, почернела и обнажила череп, на котором жутко улыбались всё те же ярко-алые губы, и пронзительно смотрели глаза, удерживавшие в воздухе кровавую маску. Руки, белыми костями вскинултсь вверх в полумольбе-полузаклинании, кровь на одежде вспыхнула, и клубы дыма стали медленно покрывать экран. 
 Олег стряхнул оцепенение и увидел всё тот же экран, с которого всё так же приветливо улыбалась его любимая актриса. ""Фильмы надо меньше смотреть"", - подумал Олег и нервно нащупав ""Power"" вдавил кнопку до отказа... ";
 
-		[TestMethod()]
-		public void Core_LangDetector()
+		[Fact()]
+		public void LangDetector()
 		{
 			var textRus = "проект";
 			var textEn = "project";
 
 			var langDetector = new LangDetector();
-	
-			
-			Assert.AreEqual(Lang.Russian, langDetector.GetLanguage(textRus));
-			Assert.AreEqual(Lang.English, langDetector.GetLanguage(textEn));
+
+
+			Assert.Equal(Lang.Russian, langDetector.GetLanguage(textRus));
+			Assert.Equal(Lang.English, langDetector.GetLanguage(textEn));
 		}
 
-		[TestMethod()]
-		public void Core_WordBreakers()
+		[Fact()]
+		public void WordBreakers()
 		{
-			IWordBreaker wb1 = new WordBreakerRegEx();
-			IWordBreaker wb2 = new WordBreakerByDelimiters();
-			wb1.MinWordLength = 3;
-			wb2.MinWordLength = 3;
+			IWordBreaker wb1 = new WordBreakerRegEx(3);
+			IWordBreaker wb2 = new WordBreakerByDelimiters(3);
 
 			var words1 = wb1.GetWords(_Text).OrderBy(w => w).ToArray();
 			var words2 = wb2.GetWords(_Text).OrderBy(w => w).ToArray();
 
-			for (int i = 0; i < Math.Min(words1.Length, words2.Length); i++)
-			{
-				Assert.AreEqual(words1[i], words2[i]);
-			}
+			Assert.All(
+				Enumerable.Range(0, Math.Min(words1.Length, words2.Length)),
+				i => Assert.Equal(words1[i], words2[i]));
 
-			Assert.AreEqual(words1.Length, words2.Length);
+			Assert.Equal(words1.Length, words2.Length);
 		}
 
-		[TestMethod()]
-		public void Core_WordCounters()
+		[Fact()]
+		public void WordBreakers2()
 		{
-			IWordBreaker wbr = new WordBreakerRegEx(); 
-			wbr.MinWordLength = 3;
+			IWordBreaker wb1 = new WordBreakerRegEx(5);
+			IWordBreaker wb2 = new WordBreakerByDelimiters(5);
 
-			IWordBreaker wbd = new WordBreakerByDelimiters();
-			wbd.MinWordLength = 3;
+			var text = "{cooler;false}";
 
-			using (var wc = new WordCounterMT(2))
-				Assert.AreEqual(56, Top10WordCountSum(wc, wbd));
+			Assert.Contains(wb1.GetWords(text), t => t == "cooler");
+			Assert.Contains(wb1.GetWords(text), t => t == "false");
 
-			using (var wc = new WordCounterST())
-				Assert.AreEqual(56, Top10WordCountSum(wc, wbd));
-
-			using (var wc = new WordCounterMTm(2, 10))
-				Assert.AreEqual(56, Top10WordCountSum(wc, wbd));
-	
-			using (var wc = new WordCounterST())
-				Assert.AreEqual(56, Top10WordCountSum(wc, wbr));
-
-			using (var wc = new WordCounterMT(2))
-				Assert.AreEqual(56, Top10WordCountSum(wc, wbr));
-
-			using (var wc = new WordCounterMTm(2, 10))
-				Assert.AreEqual(56, Top10WordCountSum(wc, wbr));
+			Assert.Contains(wb2.GetWords(text), t => t == "cooler");
+			Assert.Contains(wb2.GetWords(text), t => t == "false");
 
 		}
 
-		private static int Top10WordCountSum(IWordCounter wc, IWordBreaker wb)
+
+		[Fact()]
+		public void WordCounters()
 		{
-			using (var s = new MemoryStream(Encoding.UTF8.GetBytes(_Text)))
-			{
-				wc.Stream = s;
-				wc.StreamEncoding = Encoding.UTF8;
+			IWordBreaker wbr = new WordBreakerRegEx(3);
+			IWordBreaker wbd = new WordBreakerByDelimiters(3);
 
-				var result = wc.Count(wb);
+			using (var wc = new WordCounterMT(wbd, new MemoryStream(Encoding.UTF8.GetBytes(_Text)), Encoding.UTF8, 2))
+				Assert.Equal(56, Top10WordCountSum(wc));
 
-				var count = result
-					.OrderByDescending(a => a.Value)
-					.Take(10)
-					.Sum(a => a.Value);
+			using (var wc = new WordCounterST(wbd, new MemoryStream(Encoding.UTF8.GetBytes(_Text)), Encoding.UTF8))
+				Assert.Equal(56, Top10WordCountSum(wc));
 
-				return count;
-			}
+			using (var wc = new WordCounterMTm(wbd, new MemoryStream(Encoding.UTF8.GetBytes(_Text)), Encoding.UTF8, 2, 10))
+				Assert.Equal(56, Top10WordCountSum(wc));
+
+			using (var wc = new WordCounterST(wbr, new MemoryStream(Encoding.UTF8.GetBytes(_Text)), Encoding.UTF8))
+				Assert.Equal(56, Top10WordCountSum(wc));
+
+			using (var wc = new WordCounterMT(wbr, new MemoryStream(Encoding.UTF8.GetBytes(_Text)), Encoding.UTF8, 2))
+				Assert.Equal(56, Top10WordCountSum(wc));
+
+			using (var wc = new WordCounterMTm(wbr, new MemoryStream(Encoding.UTF8.GetBytes(_Text)), Encoding.UTF8, 2, 10))
+				Assert.Equal(56, Top10WordCountSum(wc));
+
+		}
+
+		private static int Top10WordCountSum(IWordCounter wc)
+		{
+			var result = wc.Count(null);
+
+			var count = result
+				.OrderByDescending(a => a.Value)
+				.Take(10)
+				.Sum(a => a.Value);
+
+			return count;
 		}
 	}
 }

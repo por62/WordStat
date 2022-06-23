@@ -1,4 +1,4 @@
-﻿namespace WordStat.Core
+﻿namespace WordStat6
 {
 	interface ILanguageDetector
 	{

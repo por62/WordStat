@@ -8,7 +8,7 @@ namespace WordStat
 {
 	public class WordBreakerByDelimiters : IWordBreaker
 	{
-		private static readonly string[] _Separators = new[] { " ", "_", ":", ";", "!", "?", "+", "-", "/", "\\", "\\t", ",-", "\"", "=", "<", ">", "'", ",", ".", "...", "…", "\r\n" };
+		private static readonly string[] _Separators = new[] { " ", "_", ":", ";", "!", "?", "+", "-", "/", "\\", "\\t", ",-", "\"", "=", "<", ">", "'", ",", ".", "...", "…", "\r\n", "{", "}", "(", ")", "[", "]" };
 
 		int IWordBreaker.MinWordLength { get; set; }
 		IEnumerable<string> IWordBreaker.GetWords(string phrase)

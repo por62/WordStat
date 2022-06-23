@@ -1,9 +1,12 @@
 ﻿using System.Collections.Generic;
+using System.Text;
 
-namespace WordStat.Core
+namespace WordStat6
 {
 	public class WordCounterST : WordCounterBase
 	{
+		public WordCounterST(IWordBreaker wb, Stream s, Encoding enc) :base(wb,s,enc)
+		{ }
 		protected override IDictionary<string, int> Process(IEnumerable<string> words)
 		{
 			var stats = new Dictionary<string, int>();

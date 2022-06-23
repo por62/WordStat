@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 
-namespace WordStat.Core
+namespace WordStat6
 {
 	class StopwatchHandler : IDisposable
 	{

@@ -6,16 +6,13 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace WordStat.Core
+namespace WordStat6
 {
 	class Program
 	{
 		private const int _TopWordsCount = 10;
 		private const int _Padding = 15;
-
-		private static CancellationTokenSource _CancellationTokenSource = new CancellationTokenSource();
-		private static Task _ProgressTask;
-
+	
 		static void Main(string[] args)
 		{
 			Console.OutputEncoding = Encoding.Unicode;
@@ -60,27 +57,17 @@ filepath - path to the text file
 					using (var sw = new StopwatchHandler(ts => elapsed = ts))
 					{
 						IWordBreaker wb =
-							settings.UseRegex ? (IWordBreaker) new WordBreakerRegEx() :
-							new WordBreakerByDelimiters();
-
-						wb.MinWordLength = settings.MinWordLength;
+							settings.UseRegex ? (IWordBreaker) new WordBreakerRegEx(settings.MinWordLength) :
+							new WordBreakerByDelimiters(settings.MinWordLength);
 
 						IWordCounter wc =
-							settings.ThreadCount == 1 ? new WordCounterST() :
-							settings.BlockSize == 0 ? (IWordCounter) new WordCounterMT(settings.ThreadCount) :
-							new WordCounterMTm(settings.ThreadCount, settings.BlockSize);
+							settings.ThreadCount == 1 ? new WordCounterST(wb, fs, Encoding.UTF8) :
+							settings.BlockSize == 0 ? new WordCounterMT(wb, fs, Encoding.UTF8,settings.ThreadCount) :
+							new WordCounterMTm(wb, fs, Encoding.UTF8,settings.ThreadCount, settings.BlockSize);
 
-						_ProgressTask = Task.Factory.StartNew(() => ShowProgress(wc), _CancellationTokenSource.Token);
-
-						wc.Stream = fs;
-						wc.StreamEncoding = Encoding.UTF8;
-
-						statistics = wc.Count(wb);
-
-						_CancellationTokenSource.Cancel();
-						_ProgressTask.Wait();
-
-
+	
+						statistics = wc.Count(p => ShowProgress(p));
+												
 						var orderedStat = statistics
 							.OrderByDescending(kvp => kvp.Value)
 							.Select(kvp => new { word = kvp.Key, count = kvp.Value });
@@ -132,13 +119,10 @@ filepath - path to the text file
 			catch (Exception x)
 			{
 				Console.WriteLine();
-				ConsoleColorUtils.WriteLine(ConsoleColor.Magenta, x.GetType().FullName);
+				ConsoleColorUtils.WriteLine(ConsoleColor.Magenta, x.GetType().FullName ?? "");
 				ConsoleColorUtils.WriteLine(ConsoleColor.Red, x.Message);
-				ConsoleColorUtils.WriteLine(ConsoleColor.DarkGray, x.StackTrace);
+				ConsoleColorUtils.WriteLine(ConsoleColor.DarkGray, x.StackTrace ?? "");
 			}
-
-			ConsoleColorUtils.WriteLine(ConsoleColor.White, "\r\nPress any key to exit");
-			Console.ReadKey();
 		}
 
 		private static Settings ParseSettings(string[] args)
@@ -204,35 +188,22 @@ filepath - path to the text file
 			ConsoleColorUtils.Write(ConsoleColor.Gray, " : ");
 			ConsoleColorUtils.WriteLine(ConsoleColor.Green, elapsed.ToString());
 		}
-		private static void ShowProgress(IWordCounter wc)
+		private static void ShowProgress(double progress)
 		{
 			int cursorLeft = Console.CursorLeft;
 			int cursorTop = Console.CursorTop;
 
-			while (true)
-			{
-				if (_CancellationTokenSource.IsCancellationRequested)
-				{
-					Console.SetCursorPosition(cursorLeft, cursorTop);
-					WriteProgress(100);
-					break;
-				}
+			Console.SetCursorPosition(cursorLeft, cursorTop);
+			WriteProgress(100);
 
-				Console.SetCursorPosition(cursorLeft, cursorTop);
-				WriteProgress(wc.Progress);
-
-				Thread.Sleep(3000);
-			}
+			Console.SetCursorPosition(cursorLeft, cursorTop);
+			WriteProgress(progress);
 		}
 	}
-
-	class Word
+	struct WordStat 
 	{
 		public string Text;
 		public Lang Lang;
-	}
-	class WordStat : Word
-	{
 		public int Count;
 	}
 
@@ -249,7 +220,7 @@ filepath - path to the text file
 		public Lang Language;
 	}
 
-	class Settings
+	struct Settings
 	{
 		public string FileName;
 		public int MinWordLength;

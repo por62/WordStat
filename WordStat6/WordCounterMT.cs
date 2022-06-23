@@ -2,10 +2,11 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace WordStat.Core
+namespace WordStat6
 {
 	public class WordCounterMT : WordCounterBase
 	{
@@ -16,8 +17,8 @@ namespace WordStat.Core
 		private int _WorkersCount;
 		private bool _StopWorkers;
 
-		public WordCounterMT(int workersCount)
-		{
+		public WordCounterMT(IWordBreaker wb, Stream s, Encoding enc, int workersCount) : base(wb, s, enc)
+		{ 
 			_WorkersCount = workersCount;
 		}
 
@@ -49,11 +50,11 @@ namespace WordStat.Core
 		{
 			_WordBuffer.Enqueue(word);
 		}
-		private string ReadFromBuffer()
+		private string? ReadFromBuffer()
 		{
 			if (_WordBuffer.Any())
 			{
-				string word;
+				string? word;
 				if (_WordBuffer.TryDequeue(out word)) return word;
 			}
 
@@ -68,7 +69,7 @@ namespace WordStat.Core
 			{
 				bool stopWorkers = _Lock.Get(() => _StopWorkers);
 
-				string word = ReadFromBuffer();
+				var word = ReadFromBuffer();
 
 				if (stopWorkers && word == null)
 				{
@@ -90,7 +91,7 @@ namespace WordStat.Core
 
 	public static class DictUtils
 	{
-		public static void AddOrUpdate<K, V>(this Dictionary<K, V> dict, K key, V val, Func<K, V, V> update)
+		public static void AddOrUpdate<K, V>(this Dictionary<K, V> dict, K key, V val, Func<K, V, V> update) where K:notnull
 		{
 			if (dict.ContainsKey(key))
 			{

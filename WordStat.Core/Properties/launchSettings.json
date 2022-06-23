@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "WordStat.Core": {
-      "commandName": "Project",
-      "commandLineArgs": "D:\\Temp\\MightyCall\\alltexts.txt 4 4 0"
-    }
-  }
-}
